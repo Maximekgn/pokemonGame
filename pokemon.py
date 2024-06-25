@@ -22,8 +22,30 @@ def infoPokemon(nom):
     except requests.exceptions.RequestException:
         return None
 
-def stats(pokemon):
-    return f"Nom : {pokemon['name'].capitalize()}\nHP : {pokemon['stats'][0]['base_stat']}\n"
+def degat(move):
+    url = f"https://pokeapi.co/api/v2/move/{move.lower()}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()['power']
+    except requests.exceptions.HTTPError:
+        return None
+
+def afficherPokemon(pokemon):
+    print(encadrer(f"{pokemon.nom.capitalize()}"))
+    print(f"Vie : {pokemon.vie}")
+    print("Attaques :")
+    for attaque, degat in pokemon.attaques.items():
+        print(f"{attaque} - Dégât : {degat}")
+
+
+#---------------------- Classes --------------------------
+class Pokemon:
+    def __init__(self, nom, vie, attaques):
+        self.nom = nom
+        self.vie = vie
+        self.attaques = {move: degat(move) for move in attaques}
+
 
 #---------------------- Main ------------------------------
 print(encadrer("Bienvenue Dans Le Jeu De Combat De Pokemon"))
@@ -36,23 +58,55 @@ print("Le jeu commence\n")
         # Choix du Pokémon pour le joueur 1
 while True:
     choix = input(f"{joueur1}, choisissez votre Pokémon : ").lower()
-    pokemonJoueur1 = infoPokemon(choix)
-    if pokemonJoueur1:
-        print(f"{joueur1} a choisi {choix.capitalize()} !\n")
-        print(encadrer(stats(pokemonJoueur1)))
+    pokemon_json = infoPokemon(choix)
+    if pokemon_json:
+        pokemonJoueur1 = Pokemon(choix, pokemon_json['stats'][0]['base_stat'] * 10,
+                                 [move['move']['name'] for move in pokemon_json['moves'][:6]])
+        afficherPokemon(pokemonJoueur1)
         break
     else:
         print(f"{joueur1}, votre Pokémon n'existe pas !")
         print("Ressayez à nouveau.\n")
 
         # Choix du Pokémon pour le joueur 2
+
 while True:
     choix = input(f"{joueur2}, choisissez votre Pokémon : ").lower()
-    pokemonJoueur2 = infoPokemon(choix)
-    if pokemonJoueur2:
-        print(f"{joueur2} a choisi {choix.capitalize()} !\n")
+    pokemon_json = infoPokemon(choix)
+    if pokemon_json:
+        pokemonJoueur2 = Pokemon(choix, pokemon_json['stats'][0]['base_stat'] * 10,
+                                 [move['move']['name'] for move in pokemon_json['moves']])
+        afficherPokemon(pokemonJoueur2)
         break
     else:
         print(f"{joueur2}, votre Pokémon n'existe pas !")
         print("Ressayez à nouveau.\n")
+
+
+        # Debut du Jeu
+
+gagnant = ""
+while pokemonJoueur1.vie > 0 and pokemonJoueur2.vie > 0:
+    attaque = pokemonJoueur1.attaques[ int(  input(f"{joueur1}, choisissez votre attaque : ")  )  + 1]
+    pokemonJoueur2.vie -= attaque
+    print(f"{joueur2} a perdu {attaque} points de vie")
+    print(f"{joueur2} a {pokemonJoueur2.vie} points de vie restants")
+
+    if pokemonJoueur2.vie <= 0:
+        gagnant = joueur1
+        break 
+
+    attaque = pokemonJoueur2.attaques[ int(  input(f"{joueur2}, choisissez votre attaque : ")  )  + 1]
+    pokemonJoueur1.vie -= attaque
+    print(f"{joueur1} a perdu {attaque} points de vie")
+    print(f"{joueur1} a {pokemonJoueur1.vie} points de vie restants")
+
+    if pokemonJoueur1.vie <= 0:
+        gagnant = joueur2
+        break
+
+
+print(f"Le gagnant est {gagnant} !") 
+
+
 
