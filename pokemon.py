@@ -35,8 +35,8 @@ def afficherPokemon(pokemon):
     print(encadrer(f"{pokemon.nom.capitalize()}"))
     print(f"Vie : {pokemon.vie}")
     print("Attaques :")
-    for attaque, degat in pokemon.attaques.items():
-        print(f"{attaque} - Dégât : {degat}")
+    for attaque in pokemon.attaques:
+        print(f"    {attaque} - Dégât : {degat(attaque)}")
 
 
 #---------------------- Classes --------------------------
@@ -44,7 +44,7 @@ class Pokemon:
     def __init__(self, nom, vie, attaques):
         self.nom = nom
         self.vie = vie
-        self.attaques = {move: degat(move) for move in attaques}
+        self.attaques = attaques
 
 
 #---------------------- Main ------------------------------
@@ -75,7 +75,7 @@ while True:
     pokemon_json = infoPokemon(choix)
     if pokemon_json:
         pokemonJoueur2 = Pokemon(choix, pokemon_json['stats'][0]['base_stat'] * 10,
-                                 [move['move']['name'] for move in pokemon_json['moves']])
+                                 [move['move']['name'] for move in pokemon_json['moves'][:6]])
         afficherPokemon(pokemonJoueur2)
         break
     else:
@@ -83,30 +83,29 @@ while True:
         print("Ressayez à nouveau.\n")
 
 
-        # Debut du Jeu
+        # Début du jeu
 
 gagnant = ""
 while pokemonJoueur1.vie > 0 and pokemonJoueur2.vie > 0:
-    attaque = pokemonJoueur1.attaques[ int(  input(f"{joueur1}, choisissez votre attaque : ")  )  + 1]
-    pokemonJoueur2.vie -= attaque
-    print(f"{joueur2} a perdu {attaque} points de vie")
+    attaque = pokemonJoueur1.attaques[int(input(f"{joueur1}, choisissez votre attaque : ")) - 1]
+    pokemonJoueur2.vie -= degat(attaque)
+    print(f"{joueur2} a perdu {degat(attaque)} points de vie")
     print(f"{joueur2} a {pokemonJoueur2.vie} points de vie restants")
 
     if pokemonJoueur2.vie <= 0:
         gagnant = joueur1
-        break 
+        break
 
-    attaque = pokemonJoueur2.attaques[ int(  input(f"{joueur2}, choisissez votre attaque : ")  )  + 1]
-    pokemonJoueur1.vie -= attaque
-    print(f"{joueur1} a perdu {attaque} points de vie")
+    attaque = pokemonJoueur2.attaques[int(input(f"{joueur2}, choisissez votre attaque : ")) - 1]
+    pokemonJoueur1.vie -= degat(attaque)
+    print(f"{joueur1} a perdu {degat(attaque)} points de vie")
     print(f"{joueur1} a {pokemonJoueur1.vie} points de vie restants")
 
     if pokemonJoueur1.vie <= 0:
         gagnant = joueur2
         break
 
-
-print(f"Le gagnant est {gagnant} !") 
+print(f"Le gagnant est {gagnant} !")
 
 
 
