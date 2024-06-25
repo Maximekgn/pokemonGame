@@ -17,10 +17,10 @@ def infoPokemon(nom):
         response = requests.get(url)
         response.raise_for_status()
         return response.json()
-    except requests.exceptions.HTTPError:
-        return None
-    except requests.exceptions.RequestException:
-        return None
+    except requests.exceptions.HTTPError as e:
+        print(f"Erreur HTTP: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Erreur de requête: {e}")
 
 def degat(move):
     url = f"https://pokeapi.co/api/v2/move/{move.lower()}"
@@ -28,8 +28,10 @@ def degat(move):
         response = requests.get(url)
         response.raise_for_status()
         return response.json()['power']
-    except requests.exceptions.HTTPError:
-        return None
+    except requests.exceptions.HTTPError as e:
+        print(f"Erreur HTTP: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Erreur de requête: {e}")
 
 def afficherPokemon(pokemon):
     print(encadrer(f"{pokemon.nom.capitalize()}"))
@@ -87,6 +89,7 @@ while True:
 
 gagnant = ""
 while pokemonJoueur1.vie > 0 and pokemonJoueur2.vie > 0:
+    afficherPokemon(pokemonJoueur1)
     attaque = pokemonJoueur1.attaques[int(input(f"{joueur1}, choisissez votre attaque : ")) - 1]
     pokemonJoueur2.vie -= degat(attaque)
     print(f"{joueur2} a perdu {degat(attaque)} points de vie")
@@ -96,6 +99,7 @@ while pokemonJoueur1.vie > 0 and pokemonJoueur2.vie > 0:
         gagnant = joueur1
         break
 
+    afficherPokemon(pokemonJoueur2)
     attaque = pokemonJoueur2.attaques[int(input(f"{joueur2}, choisissez votre attaque : ")) - 1]
     pokemonJoueur1.vie -= degat(attaque)
     print(f"{joueur1} a perdu {degat(attaque)} points de vie")
@@ -106,6 +110,3 @@ while pokemonJoueur1.vie > 0 and pokemonJoueur2.vie > 0:
         break
 
 print(f"Le gagnant est {gagnant} !")
-
-
-
